@@ -3,6 +3,17 @@
 
 import { buildSong, type SongDef } from './song';
 
+/** Broken chord, guitar style: root, 3rd, 5th, octave, 5th, 3rd (one beat each). */
+const arpeggio = (chord: string) => {
+  const [root, third, fifth, octave] = chord.split(' ');
+  return [root, third, fifth, octave, fifth, third].map((n) => `${n} 1`).join(', ');
+};
+const AM = 'A3 C4 E4 A4';
+const C = 'C4 E4 G4 C5';
+const D = 'D4 F#4 A4 D5';
+const F = 'F3 A3 C4 F4';
+const E = 'E3 G#3 B3 E4';
+
 const defs: SongDef[] = [
   {
     id: 'carol-of-the-bells',
@@ -115,6 +126,7 @@ const defs: SongDef[] = [
     key: 'A minor',
     bpm: 110,
     beatsPerBar: 3,
+    pickup: 1,
     sections: [
       { name: 'Phrase 1', notes: 'A4 1, C5 2, D5 1, E5 1.5, F5 .5, E5 1, D5 2, B4 1, G4 1.5, A4 .5, B4 1, C5 2, A4 1, A4 1.5, G#4 .5, A4 1, B4 2, G#4 1, E4 2' },
       { name: 'Phrase 2', notes: 'A4 1, C5 2, D5 1, E5 1.5, F5 .5, E5 1, D5 2, B4 1, G4 1.5, A4 .5, B4 1, C5 1.5, B4 .5, A4 1, G#4 1.5, F#4 .5, G#4 1, A4 2' },
@@ -124,6 +136,158 @@ const defs: SongDef[] = [
       text: 'G# is an unlit pad just left of the root A. Raising G to G# makes the melody lean back toward home: the classic minor-key cadence of film and folk music.',
     },
   },
+  {
+    id: 'jingle-bells',
+    title: 'Jingle Bells',
+    subtitle: 'Pierpont (1857) — the sleigh-ride tune of every holiday film',
+    level: 1,
+    key: 'C major',
+    bpm: 120,
+    beatsPerBar: 4,
+    sections: [
+      { name: 'Jingle bells', notes: 'E4 1, E4 1, E4 2, E4 1, E4 1, E4 2, E4 1, G4 1, C4 1.5, D4 .5, E4 4' },
+      { name: 'Oh what fun', notes: 'F4 1, F4 1, F4 1.5, F4 .5, F4 1, E4 1, E4 1, E4 .5, E4 .5, E4 1, D4 1, D4 1, E4 1, D4 2, G4 2' },
+      { name: 'Ending', notes: 'F4 1, F4 1, F4 1.5, F4 .5, F4 1, E4 1, E4 1, E4 .5, E4 .5, G4 1, G4 1, F4 1, D4 1, C4 4' },
+    ],
+    form: [0, 1, 0, 2],
+    concept: {
+      title: 'Rhythm on one pad',
+      text: 'The whole tune sits on one row, and most of it repeats a single pad (E). That makes it perfect for rhythm: switch on the metronome and keep the repeated notes steady, long and short.',
+    },
+  },
+  {
+    id: 'amazing-grace',
+    title: 'Amazing Grace',
+    subtitle: "Traditional hymn — the bagpipe farewell in Star Trek II and many films",
+    level: 2,
+    key: 'G major',
+    bpm: 80,
+    beatsPerBar: 3,
+    pickup: 1,
+    sections: [
+      { name: 'Amazing grace', notes: 'D4 1, G4 2, B4 .5, G4 .5, B4 2, A4 1, G4 2, E4 1, D4 2, D4 1, G4 2, B4 .5, G4 .5, B4 2, A4 1, D5 5' },
+      { name: 'I once was lost', notes: 'B4 1, D5 2, B4 .5, G4 .5, B4 2, A4 1, G4 2, E4 1, D4 2, D4 1, G4 2, B4 .5, G4 .5, B4 2, A4 1, G4 5' },
+    ],
+    concept: {
+      title: 'Melodies built on a chord',
+      text: 'The tune keeps leaping between G, B and D, the three notes of the G major chord, then steps down through the notes in between. Many melodies are chord notes joined by steps.',
+    },
+  },
+  {
+    id: 'fur-elise',
+    title: 'Für Elise',
+    subtitle: 'Beethoven — the music-box tune everyone knows',
+    level: 2,
+    key: 'A minor',
+    bpm: 120,
+    beatsPerBar: 3,
+    pickup: 1,
+    sections: [
+      {
+        name: 'The famous opening',
+        notes:
+          'E5 .5, D#5 .5, E5 .5, D#5 .5, E5 .5, B4 .5, D5 .5, C5 .5, A4 1, r .5, C4 .5, E4 .5, A4 .5, B4 1, r .5, E4 .5, G#4 .5, B4 .5, C5 1, r .5, E4 .5, E5 .5, D#5 .5, E5 .5, D#5 .5, E5 .5, B4 .5, D5 .5, C5 .5, A4 1, r .5, C4 .5, E4 .5, A4 .5, B4 1, r .5, E4 .5, C5 .5, B4 .5, A4 2',
+      },
+    ],
+    concept: {
+      title: 'Chromatic neighbours',
+      text: 'The tune rocks between E and the unlit pad right next to it, D#. A note outside the key, one pad away, adds tension that resolves back to the lit pad. Chromatic mode keeps these neighbours under your finger.',
+    },
+  },
+  {
+    id: 'minuet-in-g',
+    title: 'Minuet in G',
+    subtitle: 'Petzold (long credited to Bach) — the melody of the 1965 pop hit "A Lover\'s Concerto"',
+    level: 2,
+    key: 'G major',
+    bpm: 110,
+    beatsPerBar: 3,
+    sections: [
+      {
+        name: 'Part 1',
+        notes:
+          'D5 1, G4 .5, A4 .5, B4 .5, C5 .5, D5 1, G4 1, G4 1, E5 1, C5 .5, D5 .5, E5 .5, F#5 .5, G5 1, G4 1, G4 1, C5 1, D5 .5, C5 .5, B4 .5, A4 .5, B4 1, C5 .5, B4 .5, A4 .5, G4 .5, F#4 1, G4 .5, A4 .5, B4 .5, G4 .5, A4 3',
+      },
+    ],
+    concept: {
+      title: 'Scale runs',
+      text: 'Most of the tune runs step by step along the lit pads of G major. It is the same shape as the C major scale, just started from a different root: learn a scale shape once, and runs like these fall under your fingers.',
+    },
+  },
+  {
+    id: 'the-entertainer',
+    title: 'The Entertainer',
+    subtitle: 'Scott Joplin (1902) — the ragtime theme of the film The Sting',
+    level: 2,
+    key: 'C major',
+    bpm: 72,
+    beatsPerBar: 2,
+    pickup: 0.5,
+    sections: [
+      {
+        name: 'The famous opening',
+        notes: 'D4 .25, D#4 .25, E4 .25, C5 .5, E4 .25, C5 .5, E4 .25, C5 1.5, C5 .25, D5 .25, D#5 .25, E5 .25, C5 .25, D5 .25, E5 .5, B4 .25, D5 .5, C5 1.5',
+      },
+    ],
+    concept: {
+      title: 'Sneaking in from below',
+      text: 'The tune slides into E from the unlit pad just to its left, and does it again an octave higher. Approaching a lit pad from its neighbour is a trick ragtime, jazz and funk use all the time.',
+    },
+  },
+  {
+    id: 'toccata',
+    title: 'Toccata in D minor',
+    subtitle: 'Bach — the spooky organ opening of horror films and haunted-castle games',
+    level: 2,
+    key: 'D minor',
+    bpm: 60,
+    beatsPerBar: 4,
+    sections: [
+      { name: 'The call', notes: 'A4 .25, G4 .25, A4 3.5, G4 .25, F4 .25, E4 .25, D4 .25, C#4 1, D4 2' },
+      { name: 'An octave lower', notes: 'A3 .25, G3 .25, A3 3.5, G3 .25, F3 .25, E3 .25, D3 .25, C#3 1, D3 2' },
+    ],
+    concept: {
+      title: 'Same shape, lower octave',
+      text: 'The second call is the first one an octave down: the same finger shape, two rows lower and two pads right. The unlit C# just below the root D gives it that dramatic pull home.',
+    },
+  },
+  {
+    id: 'canon-in-d',
+    title: 'Canon in D',
+    subtitle: 'Pachelbel — the wedding classic whose chords run through many pop songs',
+    level: 3,
+    key: 'D major',
+    bpm: 60,
+    beatsPerBar: 4,
+    sections: [
+      { name: 'Bass line', notes: 'D3 2, A2 2, B2 2, F#2 2, G2 2, D2 2, G2 2, A2 2' },
+      { name: 'Chords', notes: 'D4+F#4+A4 2, A3+C#4+E4 2, B3+D4+F#4 2, F#3+A3+C#4 2, G3+B3+D4 2, D4+F#4+A4 2, G3+B3+D4 2, A3+C#4+E4 2' },
+      { name: 'Chords, smooth', notes: 'D4+F#4+A4 2, C#4+E4+A4 2, B3+D4+F#4 2, C#4+F#4+A4 2, B3+D4+G4 2, A3+D4+F#4 2, B3+D4+G4 2, C#4+E4+A4 2' },
+    ],
+    form: [],
+    concept: {
+      title: 'A chord progression',
+      text: 'Eight chords, D A Bm F#m G D G A, over a bass that walks down and back up. Watch the chord names as you play. The smooth version keeps the same chords but picks the nearest pads, so your hand barely moves.',
+    },
+  },
+  {
+    id: 'rising-sun',
+    title: 'House of the Rising Sun',
+    subtitle: 'Traditional folk song — the rolling chords rock bands made famous',
+    level: 3,
+    key: 'A minor',
+    bpm: 180,
+    beatsPerBar: 6,
+    sections: [
+      { name: 'Chords', notes: 'A3+C4+E4 6, C4+E4+G4 6, D4+F#4+A4 6, F3+A3+C4 6, A3+C4+E4 6, C4+E4+G4 6, E3+G#3+B3 6, E3+G#3+B3 6' },
+      { name: 'Arpeggios', notes: [AM, C, D, F, AM, C, E, E].map(arpeggio).join(', ') },
+    ],
+    form: [],
+    concept: {
+      title: 'Arpeggios',
+      text: 'Play a chord one note at a time and you get an arpeggio, the rolling guitar pattern. Same shapes as the block chords, spread out in time. The D and E chords borrow unlit pads (F# and G#): that is where the song gets its colour.',
+    },
+  },
 ];
 
-export const SONGS = defs.map(buildSong);
+export const SONGS = defs.map(buildSong).sort((a, b) => a.level - b.level);

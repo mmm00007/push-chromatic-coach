@@ -1,7 +1,7 @@
 // Lesson engine: key lighting like Push chromatic mode, plus Follow (wait) mode.
 
 import { choosePads, padAt, padIndex, padPitch, SIZE, type Pad } from './grid';
-import { degree, inKey } from './music';
+import { degree, inKey, type Key } from './music';
 import type { Section, Song } from './song';
 
 /** Push chromatic mode lighting: root in colour, key notes white, other notes unlit. */
@@ -10,11 +10,10 @@ export type Base = 'off' | 'inKey' | 'root';
 export type Mark = 'target' | 'next' | 'pressed' | 'wrong';
 export type Cell = { pitch: number; base: Base; mark?: Mark };
 
-export function keyLighting(song: Song): Cell[] {
+export function keyLighting(base: number, key: Key): Cell[] {
   return Array.from({ length: SIZE * SIZE }, (_, i) => {
-    const pitch = padPitch(song.base, padAt(i));
-    const base: Base = degree(song.key, pitch) === 0 ? 'root' : inKey(song.key, pitch) ? 'inKey' : 'off';
-    return { pitch, base };
+    const pitch = padPitch(base, padAt(i));
+    return { pitch, base: degree(key, pitch) === 0 ? 'root' : inKey(key, pitch) ? 'inKey' : 'off' };
   });
 }
 
@@ -33,6 +32,11 @@ export class Follow {
 
   constructor(readonly song: Song, readonly section: Section) {
     this.pads = choosePads(song.base, section.steps.map((s) => s.pitches));
+  }
+
+  /** Pitches currently held down. */
+  get heldPitches(): number[] {
+    return [...this.held.values()];
   }
 
   get done(): boolean {
@@ -69,7 +73,7 @@ export class Follow {
   }
 
   cells(): Cell[] {
-    const cells = keyLighting(this.song);
+    const cells = keyLighting(this.song.base, this.song.key);
     markPads(cells, this.pads[this.index + 1], 'next');
     markPads(cells, this.pads[this.index], 'target');
     for (const i of this.held.keys()) cells[i].mark = this.wrong.has(i) ? 'wrong' : 'pressed';

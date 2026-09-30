@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { choosePads, padPitch } from '../src/grid';
 import { parseNotes } from '../src/song';
+import { BASICS } from '../src/basics';
 import { SONGS } from '../src/songs';
 
 describe('songs', () => {
@@ -14,10 +15,11 @@ describe('songs', () => {
     });
     expect(() => parseNotes('H4 1')).toThrow();
     expect(() => parseNotes('C4')).toThrow();
+    expect(parseNotes('C4+E4+G4 4 [I]').steps[0].label).toBe('I');
   });
 
-  it('every bundled song fits the grid with a pad for every note', () => {
-    for (const song of SONGS) {
+  it('every bundled song and basic lesson fits the grid with a pad for every note', () => {
+    for (const song of [...SONGS, ...BASICS]) {
       expect(song.sections.length).toBeGreaterThan(0);
       for (const section of song.sections) {
         const pads = choosePads(song.base, section.steps.map((s) => s.pitches));
