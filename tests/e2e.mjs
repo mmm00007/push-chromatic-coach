@@ -1,5 +1,6 @@
 // End-to-end smoke test: build output served by `vite preview`, driven in headless
 // Firefox (no Web MIDI there, so pads are clicked on screen). Run: npm run e2e
+// Set E2E_URL to test a deployed site instead (e.g. the GitHub Pages URL).
 import { mkdirSync } from 'node:fs';
 import puppeteer from 'puppeteer-core';
 import { preview } from 'vite';
@@ -8,14 +9,14 @@ import { preview } from 'vite';
 process.env.TMPDIR = new URL('../node_modules/.e2e-tmp/', import.meta.url).pathname;
 mkdirSync(process.env.TMPDIR, { recursive: true });
 
-const server = await preview({ preview: { port: 4173, strictPort: true } });
+const server = process.env.E2E_URL ? null : await preview({ preview: { port: 4173, strictPort: true } });
 const browser = await puppeteer.launch({ browser: 'firefox', executablePath: process.env.FIREFOX ?? '/usr/bin/firefox', headless: true });
 const errors = [];
 try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-  await page.goto('http://localhost:4173/push-chromatic-coach/');
+  await page.goto(process.env.E2E_URL ?? 'http://localhost:4173/push-chromatic-coach/');
 
   const clickText = async (text) => {
     const button = await page.waitForSelector(`::-p-xpath(//button[contains(., "${text}")])`, { timeout: 10_000 });
@@ -46,7 +47,7 @@ try {
   console.log('e2e ok');
 } finally {
   await browser.close();
-  server.httpServer.close();
+  server?.httpServer.close();
 }
 if (errors.length) {
   console.error('Page errors:\n' + errors.join('\n'));
