@@ -24,23 +24,45 @@ try {
   };
   const waitText = (text, timeout = 15_000) => page.waitForSelector(`::-p-text(${text})`, { timeout });
 
+  const playThrough = async () => {
+    // Click the waiting green pad(s) until the section is done; chords latch pad by pad.
+    for (let n = 0; n < 100 && !(await page.$('::-p-text(Clean run)')); n++) {
+      const pad = await page.waitForSelector('.pad.target', { timeout: 5_000 });
+      await pad.click();
+    }
+    await waitText('Clean run');
+  };
+
   await clickText('Start');
   await waitText('piano ready');
+
+  // A song: Watch lights the pads and hands over to Play.
+  await clickText('Songs');
   await clickText('Carol of the Bells');
   await waitText('Same layout on your Push');
-
-  // Watch: the phrase plays with pads lighting, then Follow starts by itself.
   await clickText('Watch');
   await page.waitForSelector('.pad.target', { timeout: 5_000 });
   await waitText('Play:', 20_000);
-
-  // Follow: click the waiting green pad until the section is done.
-  for (let n = 0; n < 50 && !(await page.$('::-p-text(Clean run)')); n++) {
-    const pad = await page.waitForSelector('.pad.target', { timeout: 5_000 });
-    await pad.click();
-  }
-  await waitText('Clean run');
+  await playThrough();
   await waitText('A pattern that repeats');
+
+  // A basic chord lesson: chords are named with their role in the key.
+  await clickText('Basics');
+  await clickText('The chords of a key');
+  await clickText('Play');
+  await waitText('Play: C');
+  for (let i = 0; i < 3; i++) await (await page.waitForSelector('.pad.target')).click();
+  await waitText('I chord in C major');
+  await waitText('Play: Dm');
+  await playThrough();
+
+  // Free play with the metronome.
+  await clickText('Free play');
+  await (await page.waitForSelector('::-p-xpath(//label[contains(., "Metronome")]/input)')).click();
+  await page.waitForSelector('.dot.lit', { timeout: 5_000 });
+  const pads = await page.$$('.pad');
+  await pads[56].click(); // bottom-left pad (the grid is drawn top row first)
+  await waitText('the root of C major');
 
   await clickText('Check Push');
   await waitText('Incoming MIDI');

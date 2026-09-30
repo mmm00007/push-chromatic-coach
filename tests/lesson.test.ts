@@ -60,4 +60,15 @@ describe('lesson through the Push', () => {
     follow.press(g);
     expect(follow.done).toBe(true);
   });
+
+  it('lets on-screen clicks build a chord one pad at a time', () => {
+    const song = buildSong({ id: 't', title: 't', subtitle: '', level: 1, key: 'C major', bpm: 60, beatsPerBar: 4, sections: [{ name: 'c', notes: 'C4+E4+G4 4' }] });
+    const follow = new Follow(song, song.sections[0]);
+    for (const p of [60, 64, 67]) {
+      const pad = padsForPitch(song.base, p)[0];
+      follow.press(pad, true);
+      follow.release(pad);
+    }
+    expect(follow.done).toBe(true);
+  });
 });

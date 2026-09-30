@@ -40,12 +40,15 @@ export function fitBase(rootPc: number, lowest: number, highest: number): number
 /**
  * Most pitches sit on two or three pads. For each step (one note or a chord)
  * pick one pad per pitch so that shapes stay compact and the hand moves as
- * little as possible (Viterbi over the candidate shapes).
+ * little as possible (Viterbi over the candidate shapes). Compactness counts
+ * double, so a chord type keeps the same shape instead of bending to save a move.
  */
+const SPREAD_WEIGHT = 2;
+
 export function choosePads(base: number, steps: number[][]): Pad[][] {
   if (steps.length === 0) return [];
   const options = steps.map((pitches) => shapes(pitches.map((p) => padsForPitch(base, p))));
-  let cost = options[0].map(spread);
+  let cost = options[0].map((shape) => SPREAD_WEIGHT * spread(shape));
   const back: number[][] = [];
   for (let i = 1; i < options.length; i++) {
     const prev = options[i - 1];
@@ -56,7 +59,7 @@ export function choosePads(base: number, steps: number[][]): Pad[][] {
         const c = cost[j] + distance(p, shape);
         if (c < best) [best, from] = [c, j];
       });
-      return { cost: best + spread(shape), from };
+      return { cost: best + SPREAD_WEIGHT * spread(shape), from };
     });
     cost = links.map((l) => l.cost);
     back.push(links.map((l) => l.from));

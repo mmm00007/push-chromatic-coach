@@ -1,9 +1,10 @@
-// Piano sound (Salamander Grand Piano samples, CC-BY 3.0) and phrase playback.
+// Piano sound (Salamander Grand Piano samples, CC-BY 3.0), phrase playback and metronome.
 
 import * as Tone from 'tone';
 import type { Step } from './song';
 
 let sampler: Tone.Sampler | undefined;
+let click: Tone.Synth | undefined;
 
 /** Must run from a click: browsers only start audio after a user gesture. */
 export async function startAudio(): Promise<void> {
@@ -13,6 +14,11 @@ export async function startAudio(): Promise<void> {
     for (const [note, file] of [['C', 'C'], ['D#', 'Ds'], ['F#', 'Fs'], ['A', 'A']]) urls[`${note}${octave}`] = `${file}${octave}.mp3`;
   }
   sampler = new Tone.Sampler({ urls, baseUrl: `${import.meta.env.BASE_URL}samples/`, release: 0.8 }).toDestination();
+  click = new Tone.Synth({
+    oscillator: { type: 'triangle' },
+    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
+    volume: -4,
+  }).toDestination();
   await Tone.loaded();
 }
 
@@ -26,10 +32,24 @@ export function noteOff(pitch: number): void {
   sampler?.triggerRelease(noteOf(pitch), Tone.now() + 0.05);
 }
 
+type Timers = Set<ReturnType<typeof setTimeout>>;
+
 /**
- * Play steps at `bpm`. `onStep(i, true)` fires as step i starts and
- * `onStep(i, false)` just before it ends; `onEnd` after the last beat.
- * Returns a function that stops playback.
+ * Run `fn` when the audio clock reaches `time`. Timers keep running in hidden
+ * windows; Tone's Draw uses animation frames and drops late callbacks.
+ */
+function at(timers: Timers, time: number, fn: () => void): void {
+  const t = setTimeout(() => {
+    timers.delete(t);
+    fn();
+  }, Math.max(0, (time - Tone.immediate()) * 1000));
+  timers.add(t);
+}
+
+/**
+ * Play steps at `bpm` after `leadIn` beats. `onStep(i, true)` fires as step i
+ * starts and `onStep(i, false)` just before it ends; `onEnd` after the last beat.
+ * Returns a stop function and the audio time of the lead-in's first beat.
  */
 export function playSteps(
   steps: Step[],
@@ -37,34 +57,60 @@ export function playSteps(
   bpm: number,
   onStep: (i: number, on: boolean) => void,
   onEnd: () => void,
-): () => void {
+  leadIn = 0,
+): { stop: () => void; start: number } {
   const transport = Tone.getTransport();
-  // Visual callbacks run on timers aligned to the audio clock. Tone's Draw uses
-  // requestAnimationFrame and drops late callbacks, which stalls hidden windows.
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  const at = (time: number, fn: () => void) => {
-    const t = setTimeout(() => {
-      timers.delete(t);
-      fn();
-    }, Math.max(0, (time - Tone.immediate()) * 1000));
-    timers.add(t);
-  };
+  const timers: Timers = new Set();
   transport.stop();
   transport.cancel();
   const spb = 60 / bpm;
   steps.forEach((s, i) => {
     transport.schedule((time) => {
       sampler?.triggerAttackRelease(s.pitches.map(noteOf), s.dur * spb * 0.9, time);
-      at(time, () => onStep(i, true));
-    }, s.start * spb);
-    transport.schedule((time) => at(time, () => onStep(i, false)), (s.start + s.dur * 0.85) * spb);
+      at(timers, time, () => onStep(i, true));
+    }, (leadIn + s.start) * spb);
+    transport.schedule((time) => at(timers, time, () => onStep(i, false)), (leadIn + s.start + s.dur * 0.85) * spb);
   });
-  transport.schedule((time) => at(time, onEnd), beats * spb);
-  transport.start('+0.1');
-  return () => {
-    transport.stop();
-    transport.cancel();
-    timers.forEach(clearTimeout);
-    sampler?.releaseAll();
+  transport.schedule((time) => at(timers, time, onEnd), (leadIn + beats) * spb);
+  const start = Tone.now() + 0.1;
+  transport.start(start);
+  return {
+    start,
+    stop: () => {
+      transport.stop();
+      transport.cancel();
+      timers.forEach(clearTimeout);
+      sampler?.releaseAll();
+    },
   };
 }
+
+/** Click on every beat, accenting beat 1 of each bar. */
+class Metronome {
+  /** Beat index as each click sounds (0 = bar start); -1 when stopped. */
+  onBeat: (beat: number) => void = () => {};
+  private clock: Tone.Clock | null = null;
+  private readonly timers: Timers = new Set();
+
+  /** Start at `bpm`; `startAt` (audio time) lines the clicks up with playback. */
+  start(bpm: number, beatsPerBar: number, startAt = Tone.now() + 0.05): void {
+    this.stop();
+    this.clock = new Tone.Clock((time, ticks = 0) => {
+      const beat = ticks % beatsPerBar;
+      click?.triggerAttackRelease(beat === 0 ? 'E6' : 'A5', 0.03, time, beat === 0 ? 1 : 0.55);
+      at(this.timers, time, () => this.onBeat(beat));
+    }, bpm / 60);
+    this.clock.start(startAt);
+  }
+
+  stop(): void {
+    this.clock?.stop();
+    this.clock?.dispose();
+    this.clock = null;
+    this.timers.forEach(clearTimeout);
+    this.timers.clear();
+    this.onBeat(-1);
+  }
+}
+
+export const metronome = new Metronome();

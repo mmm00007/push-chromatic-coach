@@ -2,12 +2,12 @@
 
 import { DEFAULT_PALETTE, type Palette } from './push';
 
-export type Settings = { palette: Palette; showNames: boolean };
+export type Settings = { palette: Palette; showNames: boolean; metronome: boolean };
 
 const KEY = 'push-coach-settings';
 
 export function loadSettings(): Settings {
-  const settings: Settings = { palette: { ...DEFAULT_PALETTE }, showNames: true };
+  const settings: Settings = { palette: { ...DEFAULT_PALETTE }, showNames: true, metronome: false };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}');
     for (const role of Object.keys(DEFAULT_PALETTE) as (keyof Palette)[]) {
@@ -15,6 +15,7 @@ export function loadSettings(): Settings {
       if (Number.isInteger(v) && v >= 0 && v <= 127) settings.palette[role] = v;
     }
     if (typeof saved.showNames === 'boolean') settings.showNames = saved.showNames;
+    if (typeof saved.metronome === 'boolean') settings.metronome = saved.metronome;
   } catch {
     // Storage unavailable or corrupt: defaults.
   }

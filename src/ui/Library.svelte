@@ -1,19 +1,13 @@
 <script lang="ts">
   import type { Song } from '../song';
 
-  let { songs, onopen }: { songs: Song[]; onopen: (id: string) => void } = $props();
-
-  const LEVELS: Record<number, string> = {
-    1: 'Level 1 · Short tunes on a few pads',
-    2: 'Level 2 · Two rows, and the unlit pads',
-  };
-  const levels = $derived([...new Set(songs.map((s) => s.level))].sort());
+  let { groups, onopen }: { groups: { title: string; songs: Song[] }[]; onopen: (id: string) => void } = $props();
 </script>
 
-{#each levels as level (level)}
-  <h2>{LEVELS[level] ?? `Level ${level}`}</h2>
+{#each groups as group (group.title)}
+  <h2>{group.title}</h2>
   <div class="cards">
-    {#each songs.filter((s) => s.level === level) as song (song.id)}
+    {#each group.songs as song (song.id)}
       <button class="card" onclick={() => onopen(song.id)}>
         <strong>{song.title}</strong>
         <span class="muted">{song.subtitle}</span>

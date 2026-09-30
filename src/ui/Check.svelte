@@ -28,7 +28,7 @@
   const example = $derived.by<Cell[]>(() => {
     const song = SONGS.find((s) => s.id === 'ode-to-joy')!;
     const pads = choosePads(song.base, song.sections[0].steps.map((s) => s.pitches));
-    const cells = keyLighting(song);
+    const cells = keyLighting(song.base, song.key);
     markPads(cells, pads[3], 'next');
     markPads(cells, pads[2], 'target');
     cells[padIndex(pads[0][0])].mark = 'pressed';

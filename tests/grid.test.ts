@@ -26,6 +26,13 @@ describe('grid', () => {
     expect(pads.every((shape) => shape[0].row === 0)).toBe(true);
   });
 
+  it('gives every major chord of a loop the same compact triangle shape', () => {
+    // C G Am F in root position from base C3 (the pop loop).
+    const shapes = choosePads(48, [[60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60]]);
+    const offsets = (shape: { row: number; col: number }[]) => shape.map((p) => [p.row - shape[0].row, p.col - shape[0].col]);
+    for (const i of [0, 1, 3]) expect(offsets(shapes[i])).toEqual([[0, 0], [1, -1], [1, 2]]);
+  });
+
   it('keeps chord shapes compact', () => {
     // C major triad from base C3: C4 E4 G4
     const [shape] = choosePads(48, [[60, 64, 67]]);

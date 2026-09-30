@@ -28,23 +28,28 @@ export class Follow {
   mistakes = 0;
   /** Held pads (pad index → pitch). */
   readonly held = new Map<number, number>();
+  /** Pads clicked on screen for the current chord: they count as held until it's done. */
+  private readonly latched = new Map<number, number>();
   private readonly wrong = new Set<number>();
 
   constructor(readonly song: Song, readonly section: Section) {
     this.pads = choosePads(song.base, section.steps.map((s) => s.pitches));
   }
 
-  /** Pitches currently held down. */
+  /** Pitches currently held down (or latched). */
   get heldPitches(): number[] {
-    return [...this.held.values()];
+    return [...new Set([...this.held.values(), ...this.latched.values()])];
   }
 
   get done(): boolean {
     return this.index >= this.section.steps.length;
   }
 
-  /** Register a pad press; returns false for a wrong note. */
-  press(pad: Pad): boolean {
+  /**
+   * Register a pad press; returns false for a wrong note. With `latch` (mouse
+   * clicks, which can't hold several pads) a right note stays down until the chord is complete.
+   */
+  press(pad: Pad, latch = false): boolean {
     const i = padIndex(pad);
     const pitch = padPitch(this.song.base, pad);
     this.held.set(i, pitch);
@@ -55,8 +60,12 @@ export class Follow {
       this.mistakes++;
       return false;
     }
-    const held = new Set(this.held.values());
-    if (expected.every((p) => held.has(p))) this.index++;
+    if (latch) this.latched.set(i, pitch);
+    const held = new Set(this.heldPitches);
+    if (expected.every((p) => held.has(p))) {
+      this.index++;
+      this.latched.clear();
+    }
     return true;
   }
 
@@ -70,13 +79,14 @@ export class Follow {
     this.index = 0;
     this.mistakes = 0;
     this.wrong.clear();
+    this.latched.clear();
   }
 
   cells(): Cell[] {
     const cells = keyLighting(this.song.base, this.song.key);
     markPads(cells, this.pads[this.index + 1], 'next');
     markPads(cells, this.pads[this.index], 'target');
-    for (const i of this.held.keys()) cells[i].mark = this.wrong.has(i) ? 'wrong' : 'pressed';
+    for (const i of [...this.held.keys(), ...this.latched.keys()]) cells[i].mark = this.wrong.has(i) ? 'wrong' : 'pressed';
     return cells;
   }
 }
