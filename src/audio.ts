@@ -39,22 +39,32 @@ export function playSteps(
   onEnd: () => void,
 ): () => void {
   const transport = Tone.getTransport();
-  const draw = Tone.getDraw();
+  // Visual callbacks run on timers aligned to the audio clock. Tone's Draw uses
+  // requestAnimationFrame and drops late callbacks, which stalls hidden windows.
+  const timers = new Set<ReturnType<typeof setTimeout>>();
+  const at = (time: number, fn: () => void) => {
+    const t = setTimeout(() => {
+      timers.delete(t);
+      fn();
+    }, Math.max(0, (time - Tone.immediate()) * 1000));
+    timers.add(t);
+  };
   transport.stop();
   transport.cancel();
   const spb = 60 / bpm;
   steps.forEach((s, i) => {
     transport.schedule((time) => {
       sampler?.triggerAttackRelease(s.pitches.map(noteOf), s.dur * spb * 0.9, time);
-      draw.schedule(() => onStep(i, true), time);
+      at(time, () => onStep(i, true));
     }, s.start * spb);
-    transport.schedule((time) => draw.schedule(() => onStep(i, false), time), (s.start + s.dur * 0.85) * spb);
+    transport.schedule((time) => at(time, () => onStep(i, false)), (s.start + s.dur * 0.85) * spb);
   });
-  transport.schedule((time) => draw.schedule(onEnd, time), beats * spb);
+  transport.schedule((time) => at(time, onEnd), beats * spb);
   transport.start('+0.1');
   return () => {
     transport.stop();
     transport.cancel();
+    timers.forEach(clearTimeout);
     sampler?.releaseAll();
   };
 }

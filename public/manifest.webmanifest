@@ -1,0 +1,11 @@
+{
+  "name": "Push Chromatic Coach",
+  "short_name": "Push Coach",
+  "description": "Song-first lessons for Ableton Push 3 in chromatic mode",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#111214",
+  "theme_color": "#111214",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
