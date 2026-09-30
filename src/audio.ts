@@ -32,6 +32,22 @@ export function noteOff(pitch: number): void {
   sampler?.triggerRelease(noteOf(pitch), Tone.now() + 0.05);
 }
 
+/** Current audio-clock time in seconds. */
+export function audioNow(): number {
+  return Tone.immediate();
+}
+
+/**
+ * Audio time at which a sound that happened at `perfMs` (performance.now
+ * clock, as MIDI and pointer events are stamped) was heard in sync with the
+ * speakers: output latency is subtracted, since players time their notes to what they hear.
+ */
+export function heardTime(perfMs: number): number {
+  const ctx = Tone.getContext().rawContext as AudioContext;
+  const latency = (ctx.outputLatency || 0) + (ctx.baseLatency || 0);
+  return Tone.immediate() - (performance.now() - perfMs) / 1000 - latency;
+}
+
 type Timers = Set<ReturnType<typeof setTimeout>>;
 
 /**
@@ -47,9 +63,10 @@ function at(timers: Timers, time: number, fn: () => void): void {
 }
 
 /**
- * Play steps at `bpm` after `leadIn` beats. `onStep(i, true)` fires as step i
- * starts and `onStep(i, false)` just before it ends; `onEnd` after the last beat.
- * Returns a stop function and the audio time of the lead-in's first beat.
+ * Play steps at `bpm` after `leadIn` beats, at `volume` (0 = silent, for timing only).
+ * `onStep(i, true)` fires as step i starts and `onStep(i, false)` just before it
+ * ends; `onEnd` after the last beat. Returns a stop function and the audio time
+ * of the lead-in's first beat.
  */
 export function playSteps(
   steps: Step[],
@@ -58,6 +75,7 @@ export function playSteps(
   onStep: (i: number, on: boolean) => void,
   onEnd: () => void,
   leadIn = 0,
+  volume = 1,
 ): { stop: () => void; start: number } {
   const transport = Tone.getTransport();
   const timers: Timers = new Set();
@@ -66,7 +84,7 @@ export function playSteps(
   const spb = 60 / bpm;
   steps.forEach((s, i) => {
     transport.schedule((time) => {
-      sampler?.triggerAttackRelease(s.pitches.map(noteOf), s.dur * spb * 0.9, time);
+      if (volume > 0) sampler?.triggerAttackRelease(s.pitches.map(noteOf), s.dur * spb * 0.9, time, volume);
       at(timers, time, () => onStep(i, true));
     }, (leadIn + s.start) * spb);
     transport.schedule((time) => at(timers, time, () => onStep(i, false)), (leadIn + s.start + s.dur * 0.85) * spb);

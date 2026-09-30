@@ -46,10 +46,29 @@ try {
   await playThrough();
   await waitText('A pattern that repeats');
 
+  // Play along: click each pad about when it turns solid green (half a beat early),
+  // then check that hits were scored and the results and best stars appear.
+  await clickText('Play along');
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline && !(await page.$('.results'))) {
+    const pad = await page.$('.pad.target');
+    if (!pad) {
+      await new Promise((r) => setTimeout(r, 20));
+      continue;
+    }
+    await new Promise((r) => setTimeout(r, 230));
+    await pad.click().catch(() => {});
+    await page.waitForFunction((el) => !el.classList.contains('target'), { timeout: 2_000 }, pad).catch(() => {});
+  }
+  await waitText('points at');
+  const hits = await page.$eval('.counts', (el) => [...el.textContent.matchAll(/(\d+) (perfect|great|good)/g)].reduce((t, m) => t + Number(m[1]), 0));
+  if (hits < 6) throw new Error(`Play along scored only ${hits} of 12 notes`);
+  await page.waitForSelector('.tabstars');
+
   // A basic chord lesson: chords are named with their role in the key.
   await clickText('Basics');
   await clickText('The chords of a key');
-  await clickText('Play');
+  await clickText('Step by step');
   await waitText('Play: C');
   for (let i = 0; i < 3; i++) await (await page.waitForSelector('.pad.target')).click();
   await waitText('I chord in C major');

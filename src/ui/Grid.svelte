@@ -46,7 +46,9 @@
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 6px;
-    width: min(100%, 540px);
+    /* Leave room for the header, highway and controls on laptop screens. */
+    width: min(100%, 540px, calc(100vh - 400px));
+    min-width: 280px;
     user-select: none;
     touch-action: none;
   }

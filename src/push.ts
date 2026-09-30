@@ -11,7 +11,8 @@ export type Palette = Record<Base | Mark, number>;
 /** Push 2 default palette: 0 off, 122 white, 125 blue, 126 green, 127 red. 0 for a mark means "don't show it on the Push". */
 export const DEFAULT_PALETTE: Palette = { off: 0, inKey: 122, root: 125, target: 126, next: 0, pressed: 126, wrong: 127 };
 
-export type PadEvent = { pad: Pad; velocity: number };
+/** `time` is when the pad was hit, in performance.now() milliseconds. */
+export type PadEvent = { pad: Pad; velocity: number; time: number };
 
 const isPush = (port: MIDIPort) => /push/i.test(port.name ?? '');
 
@@ -63,17 +64,17 @@ export class Push {
 
   private bind(): void {
     for (const input of this.access.inputs.values()) {
-      input.onmidimessage = (e) => e.data && this.receive(input, e.data);
+      input.onmidimessage = (e) => e.data && this.receive(input, e.data, e.timeStamp || performance.now());
     }
     this.sent.fill(undefined);
   }
 
-  private receive(input: MIDIInput, data: Uint8Array): void {
+  private receive(input: MIDIInput, data: Uint8Array, time: number): void {
     this.onMessage(input.name ?? '?', data);
     if (!isPush(input)) return;
     const type = data[0] & 0xf0;
     const i = data[1] - FIRST_PAD_NOTE;
     if ((type !== 0x90 && type !== 0x80) || i < 0 || i >= SIZE * SIZE) return;
-    this.onPad({ pad: padAt(i), velocity: type === 0x90 ? data[2] : 0 });
+    this.onPad({ pad: padAt(i), velocity: type === 0x90 ? data[2] : 0, time });
   }
 }

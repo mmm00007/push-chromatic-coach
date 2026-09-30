@@ -145,6 +145,14 @@
     </div>
 
     <div class="panel">
+      <h3>Play-along timing</h3>
+      <p class="muted small">Your speakers' delay is corrected automatically. If Play along keeps saying you are late
+        (or early) when you are sure you are on the beat, for example with Bluetooth headphones, set a correction here.</p>
+      <label class="role"><span>Timing offset (ms, + if judged late)</span>
+        <input type="number" min="-300" max="500" step="10" bind:value={settings.offsetMs} /></label>
+    </div>
+
+    <div class="panel">
       <h3>Incoming MIDI</h3>
       <label class="muted small"><input type="checkbox" bind:checked={showExpression} /> Show pressure, slide and pitch bend</label>
       <div class="log mono">

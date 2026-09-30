@@ -32,9 +32,22 @@ play now. With no Push connected, you can click the pads on screen.
 
 - **Watch**: hear the phrase and see the pads light in order (tempo 40–120 %). With
   the metronome on, a one-bar count-in comes first.
-- **Play**: the green pad waits for you, and a green ring marks the pad after it. Wrong notes sound
+- **Step by step**: the green pad waits for you, and a green ring marks the pad after it. Wrong notes sound
   but flash red. On the Push, chords need every note held together. On screen, click each
   note of the chord.
+- **Play along ★**: play in time, Guitar Hero style. Notes scroll along a highway (higher notes
+  sit higher) toward a hit line, and the pads light up just before each note is due. There is a
+  one-bar count-in, the metronome, and an optional soft guide of the part.
+  - Each note is judged **Perfect / Great / Good** (±60 / 120 / 200 ms), with an early/late hint,
+    or **Miss**. Chords count once all their notes are in.
+  - A **combo** raises the multiplier to ×2/×3/×4 at 10/20/30 notes in a row. Misses and
+    wrong notes break the combo and drain the **rock meter**. With *No fail* off, an empty
+    meter ends the run.
+  - **Stars** come from accuracy (1★ at 20 % up to 5★ at 95 %). There is a full-combo badge, and
+    points scale with tempo. The best score per section is kept in this browser and shown on
+    the song cards. At 4★ or better you are offered a run 10 % faster.
+  - The results show the whole phrase, coloured by judgment, and whether you rush or drag.
+    Speaker latency is corrected automatically. Use *Check Push → Timing offset* for Bluetooth delay.
 - Basic lessons explain their idea up front. Songs show theirs when you finish a section.
 
 Bundled songs are public-domain or traditional, because this repo is public. Chord
@@ -58,9 +71,9 @@ A song with an upbeat sets `pickup` (in beats), so the metronome's accent lands 
 ```sh
 npm install
 npm run dev      # http://localhost:5173/push-chromatic-coach/
-npm test         # unit tests: grid mapping, chord naming, songs, lesson engine through a fake Push
+npm test         # unit tests: grid mapping, chord naming, songs, scoring, lesson engine through a fake Push
 npm run check    # type check
-npm run e2e      # build + headless Firefox run: a song, a chord lesson, free play + metronome
+npm run e2e      # build + headless Firefox run: a song, a scored play-along, a chord lesson, free play
 ```
 
 Web MIDI needs `https` or `localhost`. Pushes to `main` deploy to GitHub Pages once
@@ -68,9 +81,8 @@ tests, the type check and the build pass (`.github/workflows/pages.yml`).
 
 ## Roadmap
 
-- **V1**: scored play-along in time with stars and tempo steps; from-memory mode;
-  drills for each concept; a Concepts page; daily practice sessions with a practice log;
-  MIDI-file import for your own songs.
+- **V1**: from-memory mode; drills for each concept; a Concepts page; daily practice
+  sessions with a practice log; MIDI-file import for your own songs.
 - **V2**: two-handed songs (melody over chords, bass under chords).
 
 ## Credits
