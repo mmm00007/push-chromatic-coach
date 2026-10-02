@@ -1,5 +1,7 @@
 # Push Chromatic Coach
 
+**▶ Open the app: <https://mmm00007.github.io/push-chromatic-coach/>** (Chrome or Edge). Lessons, songs, free play and scored Play along are all there.
+
 Lessons for playing the **Ableton Push 3 in chromatic mode** (4ths layout), taught
 through examples.
 
@@ -17,7 +19,7 @@ sampled piano. Safari has no Web MIDI.
 
 ## Use it
 
-1. Open the GitHub Pages site of this repo in **Chrome** or **Edge** (a Mac works as is).
+1. Open **<https://mmm00007.github.io/push-chromatic-coach/>** in **Chrome** or **Edge** (a Mac works as is).
    To get a Dock icon, use Chrome's *Install* button in the address bar.
 2. Set up the Push 3: connect USB-C and power. On a standalone Push 3 choose
    *Setup → Status → Control Live*. Keep Live **closed**, then press **User**.
